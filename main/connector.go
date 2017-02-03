@@ -1,6 +1,6 @@
 components {
   id: "script"
-  component: "/main/connector.script"
+  component: "/scripts/Connector.script"
   position {
     x: 0.0
     y: 0.0

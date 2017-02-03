@@ -63,6 +63,7 @@ defold.support.Script = _hx_e()
 local Block = _hx_e()
 defold.support.GuiScript = _hx_e()
 local Board = _hx_e()
+local Connector = _hx_e()
 local LevelComplete = _hx_e()
 local MagicFx = _hx_e()
 local Main = _hx_e()
@@ -266,6 +267,24 @@ Board.prototype = _hx_a(
 )
 Board.__super__ = defold.support.GuiScript
 setmetatable(Board.prototype,{__index=defold.support.GuiScript.prototype})
+
+Connector.new = function() 
+  local self = _hx_new(Connector.prototype)
+  Connector.super(self)
+  return self
+end
+Connector.super = function(self) 
+  defold.support.Script.super(self);
+end
+_hx_exports["Connector"] = Connector
+Connector.prototype = _hx_a(
+  'init', function(self,_) 
+    _G.go.set_scale(0.18);
+    _G.go.set(".","position.z",1);
+  end
+)
+Connector.__super__ = defold.support.Script
+setmetatable(Connector.prototype,{__index=defold.support.Script.prototype})
 
 LevelComplete.new = function() 
   local self = _hx_new(LevelComplete.prototype)
