@@ -62,6 +62,7 @@ defold.support = {}
 defold.support.GuiScript = _hx_e()
 local LevelComplete = _hx_e()
 local Messages = _hx_e()
+local PresentLevel = _hx_e()
 local String = _hx_e()
 local Std = _hx_e()
 defold.GoMessages = _hx_e()
@@ -145,13 +146,13 @@ end
 _hx_exports["LevelComplete"] = LevelComplete
 LevelComplete.prototype = _hx_a(
   'init', function(self,_) 
-    _G.msg.post("#",LevelComplete.HideMessage);
+    _G.msg.post("#",Messages.Hide);
   end,
   'on_message', function(self,_,message_id,_1,_2) 
-    if (message_id) == LevelComplete.HideMessage then 
+    if (message_id) == Messages.Hide then 
       _G.msg.post("#",defold.GoMessages.disable);
       _G.msg.post(".",defold.GoMessages.release_input_focus);
-    elseif (message_id) == LevelComplete.ShowMessage then 
+    elseif (message_id) == Messages.Show then 
       _G.msg.post("#",defold.GoMessages.enable);
       _G.msg.post(".",defold.GoMessages.acquire_input_focus); end;
   end,
@@ -159,7 +160,7 @@ LevelComplete.prototype = _hx_a(
     if ((action_id == _G.hash("touch")) and action.pressed) then 
       if (_G.gui.pick_node(_G.gui.get_node("continue"),action.x,action.y)) then 
         _G.msg.post("board#script",Messages.NextLevel);
-        _G.msg.post("#",LevelComplete.HideMessage);
+        _G.msg.post("#",Messages.Hide);
       end;
     end;
     do return true end
@@ -169,6 +170,30 @@ LevelComplete.__super__ = defold.support.GuiScript
 setmetatable(LevelComplete.prototype,{__index=defold.support.GuiScript.prototype})
 
 Messages.new = {}
+
+PresentLevel.new = function() 
+  local self = _hx_new(PresentLevel.prototype)
+  PresentLevel.super(self)
+  return self
+end
+PresentLevel.super = function(self) 
+  defold.support.GuiScript.super(self);
+end
+_hx_exports["PresentLevel"] = PresentLevel
+PresentLevel.prototype = _hx_a(
+  'init', function(self,_) 
+    _G.msg.post("#",Messages.Hide);
+  end,
+  'on_message', function(self,_,message_id,message,_1) 
+    if (message_id) == Messages.Hide then 
+      _G.msg.post("#",defold.GoMessages.disable);
+    elseif (message_id) == PresentLevel.ShowMessage then 
+      _G.gui.set_text(_G.gui.get_node("message"),"Level " .. message.level);
+      _G.msg.post("#",defold.GoMessages.enable); end;
+  end
+)
+PresentLevel.__super__ = defold.support.GuiScript
+setmetatable(PresentLevel.prototype,{__index=defold.support.GuiScript.prototype})
 
 String.new = {}
 String.__index = function(s,k) 
@@ -374,9 +399,10 @@ _hx_string_mt.__add = function(a,b) return Std.string(a)..Std.string(b) end;
 _hx_string_mt.__concat = _hx_string_mt.__add
 _hx_array_mt.__index = Array.prototype
 
-LevelComplete.HideMessage = _G.hash("hide")
-LevelComplete.ShowMessage = _G.hash("show")
 Messages.NextLevel = _G.hash("next_level")
+Messages.Hide = _G.hash("hide")
+Messages.Show = _G.hash("show")
+PresentLevel.ShowMessage = _G.hash("show")
 defold.GoMessages.acquire_input_focus = _G.hash("acquire_input_focus")
 defold.GoMessages.disable = _G.hash("disable")
 defold.GoMessages.enable = _G.hash("enable")

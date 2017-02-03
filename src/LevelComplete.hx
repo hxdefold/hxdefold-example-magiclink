@@ -7,19 +7,17 @@ import defold.types.Hash;
 import defold.support.ScriptOnInputAction;
 
 class LevelComplete extends defold.support.GuiScript<{}> {
-    static var HideMessage(default,never) = new Message<Void>("hide");
-    static var ShowMessage(default,never) = new Message<Void>("show");
 
     override function init(_) {
-        Msg.post("#", HideMessage);
+        Msg.post("#", Messages.Hide);
     }
 
     override function on_message<T>(_, message_id:Message<T>, _, _) {
         switch (message_id) {
-            case HideMessage:
+            case Messages.Hide:
                 Msg.post("#", GoMessages.disable);
                 Msg.post(".", GoMessages.release_input_focus);
-            case ShowMessage:
+            case Messages.Show:
                 Msg.post("#", GoMessages.enable);
                 Msg.post(".", GoMessages.acquire_input_focus);
         }
@@ -30,7 +28,7 @@ class LevelComplete extends defold.support.GuiScript<{}> {
             var continueButton = Gui.get_node("continue");
             if (continueButton.pick_node(action.x, action.y)) {
                 Msg.post("board#script", Messages.NextLevel);
-                Msg.post("#", HideMessage);
+                Msg.post("#", Messages.Hide);
             }
         }
         // Consume all input until we're gone.

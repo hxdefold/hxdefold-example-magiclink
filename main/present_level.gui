@@ -1,4 +1,4 @@
-script: "/main/present_level.gui_script"
+script: "/scripts/PresentLevel.gui_script"
 fonts {
   name: "main"
   font: "/fonts/main.font"
