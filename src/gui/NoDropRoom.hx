@@ -1,3 +1,5 @@
+package gui;
+
 import defold.Go.GoMessages;
 import defold.Msg;
 import defold.types.Message;

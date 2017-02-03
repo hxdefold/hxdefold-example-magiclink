@@ -56,31 +56,33 @@ local function _hx_tab_array(tab,length)
 end
 
 local _hx_exports = _hx_exports or {}
+_hx_exports["gui"] = _hx_exports["gui"] or _hx_e()
 local Array = _hx_e()
 local defold = {}
 defold.support = {}
 defold.support.Script = _hx_e()
 local Block = _hx_e()
-defold.support.GuiScript = _hx_e()
-local Board = _hx_e()
 local Connector = _hx_e()
-local LevelComplete = _hx_e()
 local MagicFx = _hx_e()
 local Main = _hx_e()
-local MainMenu = _hx_e()
 local Messages = _hx_e()
-local NoDropRoom = _hx_e()
-local PresentLevel = _hx_e()
-local Restart = _hx_e()
 local String = _hx_e()
 local Std = _hx_e()
 defold.CollectionproxyMessages = _hx_e()
 defold.GoMessages = _hx_e()
 defold.GuiMessages = _hx_e()
 defold.SpriteMessages = _hx_e()
+defold.support.GuiScript = _hx_e()
 defold.types = {}
 defold.types._Message = {}
 defold.types._Message.Message_Impl_ = _hx_e()
+local gui = {}
+gui.Board = _hx_e()
+gui.LevelComplete = _hx_e()
+gui.MainMenu = _hx_e()
+gui.NoDropRoom = _hx_e()
+gui.PresentLevel = _hx_e()
+gui.Restart = _hx_e()
 local haxe = {}
 haxe.io = {}
 haxe.io.Eof = _hx_e()
@@ -203,71 +205,6 @@ Block.prototype = _hx_a(
 Block.__super__ = defold.support.Script
 setmetatable(Block.prototype,{__index=defold.support.Script.prototype})
 
-defold.support.GuiScript.new = function() 
-  local self = _hx_new(defold.support.GuiScript.prototype)
-  defold.support.GuiScript.super(self)
-  return self
-end
-defold.support.GuiScript.super = function(self) 
-end
-defold.support.GuiScript.prototype = _hx_a(
-  'init', function(self,_self) 
-  end,
-  'final', function(self,_self) 
-  end,
-  'update', function(self,_self,dt) 
-  end,
-  'on_message', function(self,_self,message_id,message,sender) 
-  end,
-  'on_input', function(self,_self,action_id,action) 
-    do return false end
-  end,
-  'on_reload', function(self,_self) 
-  end
-)
-
-Board.new = function() 
-  local self = _hx_new(Board.prototype)
-  Board.super(self)
-  return self
-end
-Board.super = function(self) 
-  defold.support.GuiScript.super(self);
-end
-_hx_exports["Board"] = Board
-Board.prototype = _hx_a(
-  'init', function(self,_) 
-    _G.msg.post("#",Messages.show);
-    _G.msg.post("/restart#gui",Messages.hide);
-    _G.msg.post("/level_complete#gui",Messages.hide);
-  end,
-  'on_message', function(self,_,message_id,message,_1) 
-    if (message_id) == Messages.hide then 
-      _G.msg.post("#",defold.GoMessages.disable);
-    elseif (message_id) == Messages.set_drop_counter then 
-      _G.gui.set_text(_G.gui.get_node("drop_counter"),message.drops .. " x");
-    elseif (message_id) == Messages.show then 
-      _G.msg.post("#",defold.GoMessages.enable); end;
-  end,
-  'on_input', function(self,_,action_id,action) 
-    if ((action_id == _G.hash("touch")) and action.pressed) then 
-      local restart = _G.gui.get_node("restart");
-      local drop = _G.gui.get_node("drop");
-      if (_G.gui.pick_node(restart,action.x,action.y)) then 
-        _G.msg.post("/restart#gui",Messages.show);
-        _G.msg.post("#",Messages.hide);
-      else
-        if (_G.gui.pick_node(drop,action.x,action.y)) then 
-          _G.msg.post("/board#script",Messages.drop);
-        end;
-      end;
-    end;
-    do return false end
-  end
-)
-Board.__super__ = defold.support.GuiScript
-setmetatable(Board.prototype,{__index=defold.support.GuiScript.prototype})
-
 Connector.new = function() 
   local self = _hx_new(Connector.prototype)
   Connector.super(self)
@@ -285,40 +222,6 @@ Connector.prototype = _hx_a(
 )
 Connector.__super__ = defold.support.Script
 setmetatable(Connector.prototype,{__index=defold.support.Script.prototype})
-
-LevelComplete.new = function() 
-  local self = _hx_new(LevelComplete.prototype)
-  LevelComplete.super(self)
-  return self
-end
-LevelComplete.super = function(self) 
-  defold.support.GuiScript.super(self);
-end
-_hx_exports["LevelComplete"] = LevelComplete
-LevelComplete.prototype = _hx_a(
-  'init', function(self,_) 
-    _G.msg.post("#",Messages.hide);
-  end,
-  'on_message', function(self,_,message_id,_1,_2) 
-    if (message_id) == Messages.hide then 
-      _G.msg.post("#",defold.GoMessages.disable);
-      _G.msg.post(".",defold.GoMessages.release_input_focus);
-    elseif (message_id) == Messages.show then 
-      _G.msg.post("#",defold.GoMessages.enable);
-      _G.msg.post(".",defold.GoMessages.acquire_input_focus); end;
-  end,
-  'on_input', function(self,_,action_id,action) 
-    if ((action_id == _G.hash("touch")) and action.pressed) then 
-      if (_G.gui.pick_node(_G.gui.get_node("continue"),action.x,action.y)) then 
-        _G.msg.post("board#script",Messages.next_level);
-        _G.msg.post("#",Messages.hide);
-      end;
-    end;
-    do return true end
-  end
-)
-LevelComplete.__super__ = defold.support.GuiScript
-setmetatable(LevelComplete.prototype,{__index=defold.support.GuiScript.prototype})
 
 MagicFx.new = function() 
   local self = _hx_new(MagicFx.prototype)
@@ -387,147 +290,7 @@ Main.prototype = _hx_a(
 Main.__super__ = defold.support.Script
 setmetatable(Main.prototype,{__index=defold.support.Script.prototype})
 
-MainMenu.new = function() 
-  local self = _hx_new(MainMenu.prototype)
-  MainMenu.super(self)
-  return self
-end
-MainMenu.super = function(self) 
-  defold.support.GuiScript.super(self);
-end
-_hx_exports["MainMenu"] = MainMenu
-MainMenu.prototype = _hx_a(
-  'init', function(self,_) 
-    _G.msg.post(".",defold.GoMessages.acquire_input_focus);
-    local bs = _hx_tab_array({[0]="brick1", "brick2", "brick3", "brick4", "brick5", "brick6" }, 6);
-    local _g = 0;
-    while (_g < bs.length) do 
-      local b = bs[_g];
-      _g = _g + 1;
-      local n = _G.gui.get_node(b);
-      local rt = (_G.math.random() * 3) + 1;
-      local a = _G.math.random(-45,45);
-      _G.gui.set_color(n,_G.vmath.vector4(1,1,1,0));
-      _G.gui.animate(n,"position.y",-100 - _G.math.random(0,50),_G.gui.EASING_INSINE,1 + rt,0,nil,_G.gui.PLAYBACK_LOOP_FORWARD);
-      _G.gui.animate(n,"color.w",1,_G.gui.EASING_INSINE,1 + rt,0,nil,_G.gui.PLAYBACK_LOOP_FORWARD);
-      _G.gui.animate(n,"rotation.z",a,_G.gui.EASING_INSINE,1 + rt,0,nil,_G.gui.PLAYBACK_LOOP_FORWARD);
-      end;
-    _G.gui.animate(_G.gui.get_node("start"),"color.x",1,_G.gui.EASING_INOUTSINE,1,0,nil,_G.gui.PLAYBACK_LOOP_PINGPONG);
-  end,
-  'on_input', function(self,_,action_id,action) 
-    if ((action_id == _G.hash("touch")) and action.pressed) then 
-      if (_G.gui.pick_node(_G.gui.get_node("start"),action.x,action.y)) then 
-        _G.msg.post("/main#script",Messages.start_game);
-      end;
-    end;
-    do return false end
-  end
-)
-MainMenu.__super__ = defold.support.GuiScript
-setmetatable(MainMenu.prototype,{__index=defold.support.GuiScript.prototype})
-
 Messages.new = {}
-
-NoDropRoom.new = function() 
-  local self = _hx_new(NoDropRoom.prototype)
-  NoDropRoom.super(self)
-  return self
-end
-NoDropRoom.super = function(self) 
-  defold.support.GuiScript.super(self);
-end
-_hx_exports["NoDropRoom"] = NoDropRoom
-NoDropRoom.prototype = _hx_a(
-  'init', function(self,_self) 
-    _G.msg.post("#",Messages.hide);
-    _self.t = 0;
-  end,
-  'update', function(self,_self,dt) 
-    if (_self.t < 0) then 
-      _G.msg.post("#",Messages.hide);
-    else
-      _self.t = _self.t - dt;
-    end;
-  end,
-  'on_message', function(self,_self,message_id,message,_) 
-    if (message_id) == Messages.hide then 
-      _G.msg.post("#",defold.GoMessages.disable);
-    elseif (message_id) == Messages.show then 
-      _self.t = 1;
-      _G.msg.post("#",defold.GoMessages.enable); end;
-  end
-)
-NoDropRoom.__super__ = defold.support.GuiScript
-setmetatable(NoDropRoom.prototype,{__index=defold.support.GuiScript.prototype})
-
-PresentLevel.new = function() 
-  local self = _hx_new(PresentLevel.prototype)
-  PresentLevel.super(self)
-  return self
-end
-PresentLevel.super = function(self) 
-  defold.support.GuiScript.super(self);
-end
-_hx_exports["PresentLevel"] = PresentLevel
-PresentLevel.prototype = _hx_a(
-  'init', function(self,_) 
-    _G.msg.post("#",Messages.hide);
-  end,
-  'on_message', function(self,_,message_id,message,_1) 
-    if (message_id) == PresentLevel.ShowMessage then 
-      _G.gui.set_text(_G.gui.get_node("message"),"Level " .. message.level);
-      _G.msg.post("#",defold.GoMessages.enable);
-    elseif (message_id) == Messages.hide then 
-      _G.msg.post("#",defold.GoMessages.disable); end;
-  end
-)
-PresentLevel.__super__ = defold.support.GuiScript
-setmetatable(PresentLevel.prototype,{__index=defold.support.GuiScript.prototype})
-
-Restart.new = function() 
-  local self = _hx_new(Restart.prototype)
-  Restart.super(self)
-  return self
-end
-Restart.super = function(self) 
-  defold.support.GuiScript.super(self);
-end
-_hx_exports["Restart"] = Restart
-Restart.prototype = _hx_a(
-  'on_message', function(self,_,message_id,message,_1) 
-    if (message_id) == Messages.hide then 
-      _G.msg.post("#",defold.GoMessages.disable);
-      _G.msg.post(".",defold.GoMessages.release_input_focus);
-    elseif (message_id) == Messages.show then 
-      _G.msg.post("#",defold.GoMessages.enable);
-      _G.msg.post(".",defold.GoMessages.acquire_input_focus); end;
-  end,
-  'on_input', function(self,_,action_id,action) 
-    if ((action_id == _G.hash("touch")) and action.pressed) then 
-      local yes = _G.gui.get_node("yes");
-      local no = _G.gui.get_node("no");
-      local quit = _G.gui.get_node("quit");
-      if (_G.gui.pick_node(no,action.x,action.y)) then 
-        _G.msg.post("#",Messages.hide);
-        _G.msg.post("/board#gui",Messages.show);
-      else
-        if (_G.gui.pick_node(yes,action.x,action.y)) then 
-          _G.msg.post("board:/board#script",Messages.restart_level);
-          _G.msg.post("/board#gui",Messages.show);
-          _G.msg.post("#",Messages.hide);
-        else
-          if (_G.gui.pick_node(quit,action.x,action.y)) then 
-            _G.msg.post("main:/main#script",Messages.to_main_menu);
-            _G.msg.post("#",Messages.hide);
-          end;
-        end;
-      end;
-    end;
-    do return true end
-  end
-)
-Restart.__super__ = defold.support.GuiScript
-setmetatable(Restart.prototype,{__index=defold.support.GuiScript.prototype})
 
 String.new = {}
 String.__index = function(s,k) 
@@ -575,10 +338,249 @@ defold.GuiMessages.new = {}
 
 defold.SpriteMessages.new = {}
 
+defold.support.GuiScript.new = function() 
+  local self = _hx_new(defold.support.GuiScript.prototype)
+  defold.support.GuiScript.super(self)
+  return self
+end
+defold.support.GuiScript.super = function(self) 
+end
+defold.support.GuiScript.prototype = _hx_a(
+  'init', function(self,_self) 
+  end,
+  'final', function(self,_self) 
+  end,
+  'update', function(self,_self,dt) 
+  end,
+  'on_message', function(self,_self,message_id,message,sender) 
+  end,
+  'on_input', function(self,_self,action_id,action) 
+    do return false end
+  end,
+  'on_reload', function(self,_self) 
+  end
+)
+
 defold.types._Message.Message_Impl_.new = {}
 defold.types._Message.Message_Impl_._new = function(s) 
   do return _G.hash(s) end;
 end
+
+gui.Board.new = function() 
+  local self = _hx_new(gui.Board.prototype)
+  gui.Board.super(self)
+  return self
+end
+gui.Board.super = function(self) 
+  defold.support.GuiScript.super(self);
+end
+_hx_exports["gui"]["Board"] = gui.Board
+gui.Board.prototype = _hx_a(
+  'init', function(self,_) 
+    _G.msg.post("#",Messages.show);
+    _G.msg.post("/restart#gui",Messages.hide);
+    _G.msg.post("/level_complete#gui",Messages.hide);
+  end,
+  'on_message', function(self,_,message_id,message,_1) 
+    if (message_id) == Messages.hide then 
+      _G.msg.post("#",defold.GoMessages.disable);
+    elseif (message_id) == Messages.set_drop_counter then 
+      _G.gui.set_text(_G.gui.get_node("drop_counter"),message.drops .. " x");
+    elseif (message_id) == Messages.show then 
+      _G.msg.post("#",defold.GoMessages.enable); end;
+  end,
+  'on_input', function(self,_,action_id,action) 
+    if ((action_id == _G.hash("touch")) and action.pressed) then 
+      local restart = _G.gui.get_node("restart");
+      local drop = _G.gui.get_node("drop");
+      if (_G.gui.pick_node(restart,action.x,action.y)) then 
+        _G.msg.post("/restart#gui",Messages.show);
+        _G.msg.post("#",Messages.hide);
+      else
+        if (_G.gui.pick_node(drop,action.x,action.y)) then 
+          _G.msg.post("/board#script",Messages.drop);
+        end;
+      end;
+    end;
+    do return false end
+  end
+)
+gui.Board.__super__ = defold.support.GuiScript
+setmetatable(gui.Board.prototype,{__index=defold.support.GuiScript.prototype})
+
+gui.LevelComplete.new = function() 
+  local self = _hx_new(gui.LevelComplete.prototype)
+  gui.LevelComplete.super(self)
+  return self
+end
+gui.LevelComplete.super = function(self) 
+  defold.support.GuiScript.super(self);
+end
+_hx_exports["gui"]["LevelComplete"] = gui.LevelComplete
+gui.LevelComplete.prototype = _hx_a(
+  'init', function(self,_) 
+    _G.msg.post("#",Messages.hide);
+  end,
+  'on_message', function(self,_,message_id,_1,_2) 
+    if (message_id) == Messages.hide then 
+      _G.msg.post("#",defold.GoMessages.disable);
+      _G.msg.post(".",defold.GoMessages.release_input_focus);
+    elseif (message_id) == Messages.show then 
+      _G.msg.post("#",defold.GoMessages.enable);
+      _G.msg.post(".",defold.GoMessages.acquire_input_focus); end;
+  end,
+  'on_input', function(self,_,action_id,action) 
+    if ((action_id == _G.hash("touch")) and action.pressed) then 
+      if (_G.gui.pick_node(_G.gui.get_node("continue"),action.x,action.y)) then 
+        _G.msg.post("board#script",Messages.next_level);
+        _G.msg.post("#",Messages.hide);
+      end;
+    end;
+    do return true end
+  end
+)
+gui.LevelComplete.__super__ = defold.support.GuiScript
+setmetatable(gui.LevelComplete.prototype,{__index=defold.support.GuiScript.prototype})
+
+gui.MainMenu.new = function() 
+  local self = _hx_new(gui.MainMenu.prototype)
+  gui.MainMenu.super(self)
+  return self
+end
+gui.MainMenu.super = function(self) 
+  defold.support.GuiScript.super(self);
+end
+_hx_exports["gui"]["MainMenu"] = gui.MainMenu
+gui.MainMenu.prototype = _hx_a(
+  'init', function(self,_) 
+    _G.msg.post(".",defold.GoMessages.acquire_input_focus);
+    local bs = _hx_tab_array({[0]="brick1", "brick2", "brick3", "brick4", "brick5", "brick6" }, 6);
+    local _g = 0;
+    while (_g < bs.length) do 
+      local b = bs[_g];
+      _g = _g + 1;
+      local n = _G.gui.get_node(b);
+      local rt = (_G.math.random() * 3) + 1;
+      local a = _G.math.random(-45,45);
+      _G.gui.set_color(n,_G.vmath.vector4(1,1,1,0));
+      _G.gui.animate(n,"position.y",-100 - _G.math.random(0,50),_G.gui.EASING_INSINE,1 + rt,0,nil,_G.gui.PLAYBACK_LOOP_FORWARD);
+      _G.gui.animate(n,"color.w",1,_G.gui.EASING_INSINE,1 + rt,0,nil,_G.gui.PLAYBACK_LOOP_FORWARD);
+      _G.gui.animate(n,"rotation.z",a,_G.gui.EASING_INSINE,1 + rt,0,nil,_G.gui.PLAYBACK_LOOP_FORWARD);
+      end;
+    _G.gui.animate(_G.gui.get_node("start"),"color.x",1,_G.gui.EASING_INOUTSINE,1,0,nil,_G.gui.PLAYBACK_LOOP_PINGPONG);
+  end,
+  'on_input', function(self,_,action_id,action) 
+    if ((action_id == _G.hash("touch")) and action.pressed) then 
+      if (_G.gui.pick_node(_G.gui.get_node("start"),action.x,action.y)) then 
+        _G.msg.post("/main#script",Messages.start_game);
+      end;
+    end;
+    do return false end
+  end
+)
+gui.MainMenu.__super__ = defold.support.GuiScript
+setmetatable(gui.MainMenu.prototype,{__index=defold.support.GuiScript.prototype})
+
+gui.NoDropRoom.new = function() 
+  local self = _hx_new(gui.NoDropRoom.prototype)
+  gui.NoDropRoom.super(self)
+  return self
+end
+gui.NoDropRoom.super = function(self) 
+  defold.support.GuiScript.super(self);
+end
+_hx_exports["gui"]["NoDropRoom"] = gui.NoDropRoom
+gui.NoDropRoom.prototype = _hx_a(
+  'init', function(self,_self) 
+    _G.msg.post("#",Messages.hide);
+    _self.t = 0;
+  end,
+  'update', function(self,_self,dt) 
+    if (_self.t < 0) then 
+      _G.msg.post("#",Messages.hide);
+    else
+      _self.t = _self.t - dt;
+    end;
+  end,
+  'on_message', function(self,_self,message_id,message,_) 
+    if (message_id) == Messages.hide then 
+      _G.msg.post("#",defold.GoMessages.disable);
+    elseif (message_id) == Messages.show then 
+      _self.t = 1;
+      _G.msg.post("#",defold.GoMessages.enable); end;
+  end
+)
+gui.NoDropRoom.__super__ = defold.support.GuiScript
+setmetatable(gui.NoDropRoom.prototype,{__index=defold.support.GuiScript.prototype})
+
+gui.PresentLevel.new = function() 
+  local self = _hx_new(gui.PresentLevel.prototype)
+  gui.PresentLevel.super(self)
+  return self
+end
+gui.PresentLevel.super = function(self) 
+  defold.support.GuiScript.super(self);
+end
+_hx_exports["gui"]["PresentLevel"] = gui.PresentLevel
+gui.PresentLevel.prototype = _hx_a(
+  'init', function(self,_) 
+    _G.msg.post("#",Messages.hide);
+  end,
+  'on_message', function(self,_,message_id,message,_1) 
+    if (message_id) == gui.PresentLevel.ShowMessage then 
+      _G.gui.set_text(_G.gui.get_node("message"),"Level " .. message.level);
+      _G.msg.post("#",defold.GoMessages.enable);
+    elseif (message_id) == Messages.hide then 
+      _G.msg.post("#",defold.GoMessages.disable); end;
+  end
+)
+gui.PresentLevel.__super__ = defold.support.GuiScript
+setmetatable(gui.PresentLevel.prototype,{__index=defold.support.GuiScript.prototype})
+
+gui.Restart.new = function() 
+  local self = _hx_new(gui.Restart.prototype)
+  gui.Restart.super(self)
+  return self
+end
+gui.Restart.super = function(self) 
+  defold.support.GuiScript.super(self);
+end
+_hx_exports["gui"]["Restart"] = gui.Restart
+gui.Restart.prototype = _hx_a(
+  'on_message', function(self,_,message_id,message,_1) 
+    if (message_id) == Messages.hide then 
+      _G.msg.post("#",defold.GoMessages.disable);
+      _G.msg.post(".",defold.GoMessages.release_input_focus);
+    elseif (message_id) == Messages.show then 
+      _G.msg.post("#",defold.GoMessages.enable);
+      _G.msg.post(".",defold.GoMessages.acquire_input_focus); end;
+  end,
+  'on_input', function(self,_,action_id,action) 
+    if ((action_id == _G.hash("touch")) and action.pressed) then 
+      local yes = _G.gui.get_node("yes");
+      local no = _G.gui.get_node("no");
+      local quit = _G.gui.get_node("quit");
+      if (_G.gui.pick_node(no,action.x,action.y)) then 
+        _G.msg.post("#",Messages.hide);
+        _G.msg.post("/board#gui",Messages.show);
+      else
+        if (_G.gui.pick_node(yes,action.x,action.y)) then 
+          _G.msg.post("board:/board#script",Messages.restart_level);
+          _G.msg.post("/board#gui",Messages.show);
+          _G.msg.post("#",Messages.hide);
+        else
+          if (_G.gui.pick_node(quit,action.x,action.y)) then 
+            _G.msg.post("main:/main#script",Messages.to_main_menu);
+            _G.msg.post("#",Messages.hide);
+          end;
+        end;
+      end;
+    end;
+    do return true end
+  end
+)
+gui.Restart.__super__ = defold.support.GuiScript
+setmetatable(gui.Restart.prototype,{__index=defold.support.GuiScript.prototype})
 
 haxe.io.Eof.new = {}
 haxe.io.Eof.prototype = _hx_a(
@@ -749,7 +751,6 @@ Messages.set_drop_counter = _G.hash("set_drop_counter")
 Messages.make_magic = _G.hash("make_magic")
 Messages.lights_on = _G.hash("lights_on")
 Messages.lights_off = _G.hash("lights_off")
-PresentLevel.ShowMessage = _G.hash("show")
 defold.CollectionproxyMessages.async_load = _G.hash("async_load")
 defold.CollectionproxyMessages.disable = _G.hash("disable")
 defold.CollectionproxyMessages.enable = _G.hash("enable")
@@ -770,6 +771,7 @@ defold.GoMessages.transform_response = _G.hash("transform_response")
 defold.GuiMessages.layout_changed = _G.hash("layout_changed")
 defold.SpriteMessages.animation_done = _G.hash("animation_done")
 defold.SpriteMessages.play_animation = _G.hash("play_animation")
+gui.PresentLevel.ShowMessage = _G.hash("show")
 lua.Boot.hiddenFields = {__id__=true, hx__closures=true, super=true, prototype=true, __fields__=true, __ifields__=true, __class__=true, __properties__=true}
 do
 

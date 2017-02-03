@@ -1,4 +1,4 @@
-script: "/scripts/LevelComplete.gui_script"
+script: "/scripts/gui/LevelComplete.gui_script"
 fonts {
   name: "main"
   font: "/fonts/main.font"

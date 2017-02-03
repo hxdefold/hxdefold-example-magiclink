@@ -1,3 +1,5 @@
+package gui;
+
 using defold.Gui; // also apply gui methods as static extension to GuiNode
 import defold.Go.GoMessages;
 import defold.Msg;
