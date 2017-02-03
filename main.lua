@@ -65,6 +65,7 @@ defold.support.GuiScript = _hx_e()
 local Board = _hx_e()
 local LevelComplete = _hx_e()
 local MagicFx = _hx_e()
+local Main = _hx_e()
 local MainMenu = _hx_e()
 local Messages = _hx_e()
 local NoDropRoom = _hx_e()
@@ -72,6 +73,7 @@ local PresentLevel = _hx_e()
 local Restart = _hx_e()
 local String = _hx_e()
 local Std = _hx_e()
+defold.CollectionproxyMessages = _hx_e()
 defold.GoMessages = _hx_e()
 defold.GuiMessages = _hx_e()
 defold.SpriteMessages = _hx_e()
@@ -329,6 +331,43 @@ MagicFx.prototype = _hx_a(
 MagicFx.__super__ = defold.support.Script
 setmetatable(MagicFx.prototype,{__index=defold.support.Script.prototype})
 
+Main.new = function() 
+  local self = _hx_new(Main.prototype)
+  Main.super(self)
+  return self
+end
+Main.super = function(self) 
+  defold.support.Script.super(self);
+end
+_hx_exports["Main"] = Main
+Main.prototype = _hx_a(
+  'init', function(self,_self) 
+    _G.msg.post("#",Messages.to_main_menu);
+    _self.state = "MAIN_MENU";
+    _G.particlefx.play("#particlefx");
+  end,
+  'on_message', function(self,_self,message_id,message,sender) 
+    if (message_id) == defold.CollectionproxyMessages.proxy_loaded then 
+      _G.msg.post(sender,defold.CollectionproxyMessages.init);
+      _G.msg.post("board:/board#script",Messages.start_level,_hx_o({__fields__={difficulty=true},difficulty=1}));
+      _G.msg.post(sender,defold.GoMessages.enable);
+      _self.state = "GAME_RUNNING";
+    elseif (message_id) == Messages.start_game then 
+      _G.msg.post("#background",defold.GoMessages.disable);
+      _G.msg.post("#boardproxy",defold.CollectionproxyMessages.load);
+      _G.msg.post("#menu",defold.GoMessages.disable);
+    elseif (message_id) == Messages.to_main_menu then 
+      if (_self.state ~= "MAIN_MENU") then 
+        _G.msg.post("#boardproxy",defold.CollectionproxyMessages.unload);
+      end;
+      _G.msg.post("main:/main#menu",defold.GoMessages.enable);
+      _G.msg.post("#background",defold.GoMessages.enable);
+      _self.state = "MAIN_MENU"; end;
+  end
+)
+Main.__super__ = defold.support.Script
+setmetatable(Main.prototype,{__index=defold.support.Script.prototype})
+
 MainMenu.new = function() 
   local self = _hx_new(MainMenu.prototype)
   MainMenu.super(self)
@@ -509,6 +548,8 @@ Std.string = function(s)
   do return lua.Boot.__string_rec(s) end;
 end
 
+defold.CollectionproxyMessages.new = {}
+
 defold.GoMessages.new = {}
 
 defold.GuiMessages.new = {}
@@ -678,6 +719,7 @@ _hx_string_mt.__concat = _hx_string_mt.__add
 _hx_array_mt.__index = Array.prototype
 
 Messages.start_game = _G.hash("start_game")
+Messages.start_level = _G.hash("start_level")
 Messages.next_level = _G.hash("next_level")
 Messages.restart_level = _G.hash("restart_level")
 Messages.to_main_menu = _G.hash("to_main_menu")
@@ -689,6 +731,16 @@ Messages.make_magic = _G.hash("make_magic")
 Messages.lights_on = _G.hash("lights_on")
 Messages.lights_off = _G.hash("lights_off")
 PresentLevel.ShowMessage = _G.hash("show")
+defold.CollectionproxyMessages.async_load = _G.hash("async_load")
+defold.CollectionproxyMessages.disable = _G.hash("disable")
+defold.CollectionproxyMessages.enable = _G.hash("enable")
+defold.CollectionproxyMessages.final = _G.hash("final")
+defold.CollectionproxyMessages.init = _G.hash("init")
+defold.CollectionproxyMessages.load = _G.hash("load")
+defold.CollectionproxyMessages.proxy_loaded = _G.hash("proxy_loaded")
+defold.CollectionproxyMessages.proxy_unloaded = _G.hash("proxy_unloaded")
+defold.CollectionproxyMessages.set_time_step = _G.hash("set_time_step")
+defold.CollectionproxyMessages.unload = _G.hash("unload")
 defold.GoMessages.acquire_input_focus = _G.hash("acquire_input_focus")
 defold.GoMessages.disable = _G.hash("disable")
 defold.GoMessages.enable = _G.hash("enable")
