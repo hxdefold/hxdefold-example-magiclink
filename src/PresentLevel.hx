@@ -6,11 +6,11 @@ import defold.types.Message;
 class PresentLevel extends defold.support.GuiScript<{}> {
     public static var ShowMessage(default,never) = new Message<{level:Int}>("show");
 
-    override function init(_) Msg.post("#", Messages.Hide);
+    override function init(_) Msg.post("#", Messages.hide);
 
     override function on_message<T>(_, message_id:Message<T>, message:T, _) {
         switch (message_id) {
-            case Messages.Hide:
+            case Messages.hide:
                 Msg.post("#", GoMessages.disable);
             case ShowMessage:
                 var n = Gui.get_node("message");

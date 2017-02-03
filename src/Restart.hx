@@ -9,10 +9,10 @@ import defold.support.ScriptOnInputAction;
 class Restart extends defold.support.GuiScript<{}> {
     override function on_message<T>(_, message_id:Message<T>, message:T, _) {
         switch (message_id) {
-            case Messages.Hide:
+            case Messages.hide:
                 Msg.post("#", GoMessages.disable);
                 Msg.post(".", GoMessages.release_input_focus);
-            case Messages.Show:
+            case Messages.show:
                 Msg.post("#", GoMessages.enable);
                 Msg.post(".", GoMessages.acquire_input_focus);
         }
@@ -25,15 +25,15 @@ class Restart extends defold.support.GuiScript<{}> {
             var quit = Gui.get_node("quit");
 
             if (no.pick_node(action.x, action.y)) {
-                Msg.post("#", Messages.Hide);
-                Msg.post("/board#gui", Messages.Show);
+                Msg.post("#", Messages.hide);
+                Msg.post("/board#gui", Messages.show);
             } else if (yes.pick_node(action.x, action.y)) {
-                Msg.post("board:/board#script", Messages.RestartLevel);
-                Msg.post("/board#gui", Messages.Show);
-                Msg.post("#", Messages.Hide);
+                Msg.post("board:/board#script", Messages.restart_level);
+                Msg.post("/board#gui", Messages.show);
+                Msg.post("#", Messages.hide);
             } else if (quit.pick_node(action.x, action.y)) {
-                Msg.post("main:/main#script", Messages.ToMainMenu);
-                Msg.post("#", Messages.Hide);
+                Msg.post("main:/main#script", Messages.to_main_menu);
+                Msg.post("#", Messages.hide);
             }
         }
         // Consume all input until we're gone.

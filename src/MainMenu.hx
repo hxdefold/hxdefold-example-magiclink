@@ -36,7 +36,7 @@ class MainMenu extends defold.support.GuiScript<{}> {
         if (action_id == hash("touch") && action.pressed) {
             var start = Gui.get_node("start");
             if (start.pick_node(action.x, action.y))
-                Msg.post("/main#script", Messages.StartGame);
+                Msg.post("/main#script", Messages.start_game);
         }
         return false;
     }

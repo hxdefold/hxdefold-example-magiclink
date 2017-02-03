@@ -9,18 +9,18 @@ import defold.support.ScriptOnInputAction;
 class Board extends defold.support.GuiScript<{}> {
 
     override function init(_) {
-        Msg.post("#", Messages.Show);
-        Msg.post("/restart#gui", Messages.Hide);
-        Msg.post("/level_complete#gui", Messages.Hide);
+        Msg.post("#", Messages.show);
+        Msg.post("/restart#gui", Messages.hide);
+        Msg.post("/level_complete#gui", Messages.hide);
     }
 
     override function on_message<T>(_, message_id:Message<T>, message:T, _) {
         switch (message_id) {
-            case Messages.Hide:
+            case Messages.hide:
                 Msg.post("#", GoMessages.disable);
-            case Messages.Show:
+            case Messages.show:
                 Msg.post("#", GoMessages.enable);
-            case Messages.SetDropCounter:
+            case Messages.set_drop_counter:
                 var n = Gui.get_node("drop_counter");
                 n.set_text(message.drops + " x");
         }
@@ -33,10 +33,10 @@ class Board extends defold.support.GuiScript<{}> {
 
             if (restart.pick_node(action.x, action.y)) {
                 // Show the restart dialog box.
-                Msg.post("/restart#gui", Messages.Show);
-                Msg.post("#", Messages.Hide);
+                Msg.post("/restart#gui", Messages.show);
+                Msg.post("#", Messages.hide);
             } else if (drop.pick_node(action.x, action.y)) {
-                Msg.post("/board#script", Messages.Drop);
+                Msg.post("/board#script", Messages.drop);
             }
         }
         return false;
