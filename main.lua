@@ -60,6 +60,7 @@ local Array = _hx_e()
 local defold = {}
 defold.support = {}
 defold.support.GuiScript = _hx_e()
+local Board = _hx_e()
 local LevelComplete = _hx_e()
 local MainMenu = _hx_e()
 local Messages = _hx_e()
@@ -136,6 +137,48 @@ defold.support.GuiScript.prototype = _hx_a(
   'on_reload', function(self,_self) 
   end
 )
+
+Board.new = function() 
+  local self = _hx_new(Board.prototype)
+  Board.super(self)
+  return self
+end
+Board.super = function(self) 
+  defold.support.GuiScript.super(self);
+end
+_hx_exports["Board"] = Board
+Board.prototype = _hx_a(
+  'init', function(self,_) 
+    _G.msg.post("#",Messages.Show);
+    _G.msg.post("/restart#gui",Messages.Hide);
+    _G.msg.post("/level_complete#gui",Messages.Hide);
+  end,
+  'on_message', function(self,_,message_id,message,_1) 
+    if (message_id) == Messages.Hide then 
+      _G.msg.post("#",defold.GoMessages.disable);
+    elseif (message_id) == Messages.SetDropCounter then 
+      _G.gui.set_text(_G.gui.get_node("drop_counter"),message.drops .. " x");
+    elseif (message_id) == Messages.Show then 
+      _G.msg.post("#",defold.GoMessages.enable); end;
+  end,
+  'on_input', function(self,_,action_id,action) 
+    if ((action_id == _G.hash("touch")) and action.pressed) then 
+      local restart = _G.gui.get_node("restart");
+      local drop = _G.gui.get_node("drop");
+      if (_G.gui.pick_node(restart,action.x,action.y)) then 
+        _G.msg.post("/restart#gui",Messages.Show);
+        _G.msg.post("#",Messages.Hide);
+      else
+        if (_G.gui.pick_node(drop,action.x,action.y)) then 
+          _G.msg.post("/board#script",Messages.Drop);
+        end;
+      end;
+    end;
+    do return false end
+  end
+)
+Board.__super__ = defold.support.GuiScript
+setmetatable(Board.prototype,{__index=defold.support.GuiScript.prototype})
 
 LevelComplete.new = function() 
   local self = _hx_new(LevelComplete.prototype)
@@ -491,6 +534,8 @@ Messages.RestartLevel = _G.hash("restart_level")
 Messages.ToMainMenu = _G.hash("to_main_menu")
 Messages.Hide = _G.hash("hide")
 Messages.Show = _G.hash("show")
+Messages.SetDropCounter = _G.hash("set_drop_counter")
+Messages.Drop = _G.hash("drop")
 PresentLevel.ShowMessage = _G.hash("show")
 defold.GoMessages.acquire_input_focus = _G.hash("acquire_input_focus")
 defold.GoMessages.disable = _G.hash("disable")
