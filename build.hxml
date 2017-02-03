@@ -1,0 +1,7 @@
+-cp src
+-D analyzer-optimize
+-D luajit
+-lib hxdefold
+-lua main.lua
+--macro defold.support.ScriptMacro.use(".")
+--macro include("", true, null, ["src"])
