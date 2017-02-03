@@ -1,6 +1,6 @@
 components {
   id: "script"
-  component: "/main/magic_fx.script"
+  component: "/scripts/MagicFx.script"
   position {
     x: 0.0
     y: 0.0

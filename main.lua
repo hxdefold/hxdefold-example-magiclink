@@ -64,6 +64,7 @@ local Block = _hx_e()
 defold.support.GuiScript = _hx_e()
 local Board = _hx_e()
 local LevelComplete = _hx_e()
+local MagicFx = _hx_e()
 local MainMenu = _hx_e()
 local Messages = _hx_e()
 local NoDropRoom = _hx_e()
@@ -297,6 +298,36 @@ LevelComplete.prototype = _hx_a(
 )
 LevelComplete.__super__ = defold.support.GuiScript
 setmetatable(LevelComplete.prototype,{__index=defold.support.GuiScript.prototype})
+
+MagicFx.new = function() 
+  local self = _hx_new(MagicFx.prototype)
+  MagicFx.super(self)
+  return self
+end
+MagicFx.super = function(self) 
+  defold.support.Script.super(self);
+end
+_hx_exports["MagicFx"] = MagicFx
+MagicFx.prototype = _hx_a(
+  'init', function(self,_self) 
+    _G.msg.post("#",Messages.lights_off);
+    if (_self.direction == _G.hash("left")) then 
+      _G.go.set(".","euler.z",0);
+      _G.go.animate(".","euler.z",_G.go.PLAYBACK_LOOP_FORWARD,360,_G.go.EASING_LINEAR,5 + _G.math.random());
+    else
+      _G.go.set(".","euler.z",0);
+      _G.go.animate(".","euler.z",_G.go.PLAYBACK_LOOP_FORWARD,-360,_G.go.EASING_LINEAR,4 + _G.math.random());
+    end;
+  end,
+  'on_message', function(self,_self,message_id,message,_) 
+    if (message_id) == Messages.lights_off then 
+      _G.msg.post("#light",defold.GoMessages.disable);
+    elseif (message_id) == Messages.lights_on then 
+      _G.msg.post("#light",defold.GoMessages.enable); end;
+  end
+)
+MagicFx.__super__ = defold.support.Script
+setmetatable(MagicFx.prototype,{__index=defold.support.Script.prototype})
 
 MainMenu.new = function() 
   local self = _hx_new(MainMenu.prototype)
@@ -672,4 +703,5 @@ lua.Boot.hiddenFields = {__id__=true, hx__closures=true, super=true, prototype=t
 do
 
 end
+_G.math.randomseed(_G.os.time());
 return _hx_exports
