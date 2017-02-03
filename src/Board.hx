@@ -108,7 +108,8 @@ class Board extends defold.support.Script<BoardData> {
             var col = self.board[x];
             for (y in 0...col.length) {
                 var b = col[y];
-                self.blocks.push({id: b.id, color: b.color, x: b.x, y: b.y});
+                if (b != null)
+                    self.blocks.push({id: b.id, color: b.color, x: b.x, y: b.y});
             }
         }
     }
@@ -301,6 +302,21 @@ class Board extends defold.support.Script<BoardData> {
         build_blocklist(self);
     }
 
+    // just a debug function to print out the board
+    static function printBoard(self:BoardData, ?caption:String) {
+        if (caption != null)
+            trace(caption);
+
+        for (y in 0...boardheight) {
+            var r = [];
+            for (x in 0...boardwidth) {
+                var cell = self.board[x][boardheight-y-1];
+                r.push(if (cell == null) " " else if (cell.color == hash("magic")) "*" else "x");
+            }
+            trace(r.join(" "));
+        }
+    }
+
     /**
         Apply shift-down logic to all blocks.
     **/
@@ -397,10 +413,8 @@ class Board extends defold.support.Script<BoardData> {
                 mc = row_m.length;
                 for (i in 0...row_m.length) {
                     var x = row_m[i].x;
-                    trace(i, x, y);
                     if (y > 0 && self.board[x][y-1] == REMOVING_BLOCK) {
                         // Hole below, do nothing.
-                        trace(i);
                         row_m[i] = null;
                     } else if (x > 0 && self.board[x-1][y] == REMOVING_BLOCK) {
                         // Hole to the left! Slide magic block there
@@ -410,7 +424,6 @@ class Board extends defold.support.Script<BoardData> {
                         // Calc new z
                         Go.set(self.board[x][y].id, "position.z", (x - 1) * -0.1 + y * 0.01);
                         self.board[x][y] = REMOVING_BLOCK; // Will be nilled later
-                        trace(i);
                         row_m[i] = null;
                     } else if (x < boardwidth - 1 && self.board[x + 1][y] == REMOVING_BLOCK) {
                         // Hole to the right. Slide magic block there
@@ -423,13 +436,6 @@ class Board extends defold.support.Script<BoardData> {
                         row_m[i] = null;
                     }
                 }
-                // var len = row_m.length;
-                // var idx = len;
-                // while (len-- > 0) {
-                //     if (row_m[idx] != null)
-                //         break;
-                // }
-                // row_m.splice(idx, row_m.length - idx);
             }
         }
     }
