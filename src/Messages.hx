@@ -4,6 +4,7 @@ class Messages {
     var start_level:{difficulty:Int};
     var next_level;
     var restart_level;
+    var level_completed;
     var to_main_menu;
     var hide;
     var show;

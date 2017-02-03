@@ -62,9 +62,11 @@ local defold = {}
 defold.support = {}
 defold.support.Script = _hx_e()
 local Block = _hx_e()
+local Board = _hx_e()
 local Connector = _hx_e()
 local MagicFx = _hx_e()
 local Main = _hx_e()
+local Math = _hx_e()
 local Messages = _hx_e()
 local String = _hx_e()
 local Std = _hx_e()
@@ -84,6 +86,7 @@ gui.NoDropRoom = _hx_e()
 gui.PresentLevel = _hx_e()
 gui.Restart = _hx_e()
 local haxe = {}
+haxe.Log = _hx_e()
 haxe.io = {}
 haxe.io.Eof = _hx_e()
 local lua = {}
@@ -112,6 +115,55 @@ Array.prototype = _hx_a(
     _G.rawset(self,self.length,x);
     _G.rawset(self,"length",self.length + 1);
     do return _G.rawget(self,"length") end
+  end,
+  'splice', function(self,pos,len) 
+    if ((len < 0) or (pos > self.length)) then 
+      do return _hx_tab_array({ }, 0) end;
+    else
+      if (pos < 0) then 
+        pos = self.length - (_G.math.fmod(-pos, self.length));
+      end;
+    end;
+    local b = self.length - pos;
+    len = (function() 
+      local _hx_1
+      if (Math.isNaN(len) or Math.isNaN(b)) then 
+      _hx_1 = (0/0); else 
+      _hx_1 = _G.math.min(len,b); end
+      return _hx_1
+    end )();
+    local ret = _hx_tab_array({ }, 0);
+    local _g1 = pos;
+    local _g = pos + len;
+    while (_g1 < _g) do 
+      _g1 = _g1 + 1;
+      local i = _g1 - 1;
+      ret:push(self[i]);
+      self[i] = self[i + len];
+      end;
+    local _g11 = pos + len;
+    local _g2 = self.length;
+    while (_g11 < _g2) do 
+      _g11 = _g11 + 1;
+      local i1 = _g11 - 1;
+      self[i1] = self[i1 + len];
+      end;
+    local tmp = self;
+    tmp.length = tmp.length - len;
+    do return ret end
+  end,
+  'filter', function(self,f) 
+    local _g = _hx_tab_array({ }, 0);
+    local _g1 = 0;
+    local _g2 = self;
+    while (_g1 < _g2.length) do 
+      local i = _g2[_g1];
+      _g1 = _g1 + 1;
+      if (f(i)) then 
+        _g:push(i);
+      end;
+      end;
+    do return _g end
   end,
   'iterator', function(self) 
     local _gthis = self;
@@ -205,6 +257,469 @@ Block.prototype = _hx_a(
 Block.__super__ = defold.support.Script
 setmetatable(Block.prototype,{__index=defold.support.Script.prototype})
 
+Board.new = function() 
+  local self = _hx_new(Board.prototype)
+  Board.super(self)
+  return self
+end
+Board.super = function(self) 
+  defold.support.Script.super(self);
+end
+_hx_exports["Board"] = Board
+Board.build_blocklist = function(_self) 
+  _self.blocks = _hx_tab_array({ }, 0);
+  local _g1 = 0;
+  local _g = _self.board.length;
+  while (_g1 < _g) do 
+    _g1 = _g1 + 1;
+    local col = _self.board[_g1 - 1];
+    local _g3 = 0;
+    local _g2 = col.length;
+    while (_g3 < _g2) do 
+      _g3 = _g3 + 1;
+      local b = col[_g3 - 1];
+      _self.blocks:push(_hx_o({__fields__={id=true,color=true,x=true,y=true},id=b.id,color=b.color,x=b.x,y=b.y}));
+      end;
+    end;
+end
+Board.magic_blocks = function(_self) 
+  local magic = _hx_tab_array({ }, 0);
+  local _g = 0;
+  while (_g < 7) do 
+    _g = _g + 1;
+    local x = _g - 1;
+    local _g1 = 0;
+    while (_g1 < 9) do 
+      _g1 = _g1 + 1;
+      local block = _self.board[x][_g1 - 1];
+      if ((block ~= nil) and (block.color == _G.hash("magic"))) then 
+        magic:push(block);
+      end;
+      end;
+    end;
+  do return magic end;
+end
+Board.count_magic_regions = function(blocks) 
+  local maxr = 0;
+  local _g = 0;
+  while (_g < blocks.length) do 
+    local m = blocks[_g];
+    _g = _g + 1;
+    if (m.region > maxr) then 
+      maxr = m.region;
+    end;
+    end;
+  do return maxr end;
+end
+Board.adjacent_magic_blocks = function(blocks,block) 
+  do return blocks:filter(function(e) 
+    if (not ((block.x == e.x) and (_G.math.abs(block.y - e.y) == 1))) then 
+      if (block.y == e.y) then 
+        do return _G.math.abs(block.x - e.x) == 1 end;
+      else
+        do return false end;
+      end;
+    else
+      do return true end;
+    end;
+  end) end;
+end
+Board.mark_neighbors = function(blocks,block,region) 
+  local neighbors = Board.adjacent_magic_blocks(blocks,block);
+  local _g = 0;
+  while (_g < neighbors.length) do 
+    local m = neighbors[_g];
+    _g = _g + 1;
+    if (m.region == nil) then 
+      m.region = region;
+      Board.mark_neighbors(blocks,m,region);
+    end;
+    end;
+end
+Board.mark_magic_regions = function(_self) 
+  local m_blocks = Board.magic_blocks(_self);
+  local _g = 0;
+  while (_g < m_blocks.length) do 
+    local m = m_blocks[_g];
+    _g = _g + 1;
+    m.region = nil;
+    m.neighbors = Board.adjacent_magic_blocks(m_blocks,m).length;
+    end;
+  local region = 1;
+  local _g1 = 0;
+  while (_g1 < m_blocks.length) do 
+    local m1 = m_blocks[_g1];
+    _g1 = _g1 + 1;
+    if (m1.region == nil) then 
+      m1.region = region;
+      Board.mark_neighbors(m_blocks,m1,region);
+      region = region + 1;
+    end;
+    end;
+  do return m_blocks end;
+end
+Board.highlight_magic = function(blocks) 
+  local _g = 0;
+  while (_g < blocks.length) do 
+    local m = blocks[_g];
+    _g = _g + 1;
+    if (m.neighbors > 0) then 
+      _G.msg.post(m.id,Messages.lights_on);
+    else
+      _G.msg.post(m.id,Messages.lights_off);
+    end;
+    end;
+end
+Board.clear_board = function(_self) 
+  local _g = 0;
+  local _g1 = _self.board;
+  while (_g < _g1.length) do 
+    local col = _g1[_g];
+    _g = _g + 1;
+    local _g3 = 0;
+    local _g2 = col.length;
+    while (_g3 < _g2) do 
+      _g3 = _g3 + 1;
+      local i = _g3 - 1;
+      if (col[i] ~= nil) then 
+        _G.go.delete(col[i].id);
+        col[i] = nil;
+      end;
+      end;
+    end;
+end
+Board.same_color_neighbors = function(_self,x,y) 
+  do return _self.blocks:filter(function(v) 
+    if (((v.id ~= _self.board[x][y].id) and (((v.x == x) or (v.x == (x - 1))) or (v.x == (x + 1)))) and (((v.y == y) or (v.y == (y - 1))) or (v.y == (y + 1)))) then 
+      do return v.color == _self.board[x][y].color end;
+    else
+      do return false end;
+    end;
+  end) end;
+end
+Board.remove_chain = function(_self) 
+  local _g = 0;
+  local _g1 = _self.chain;
+  while (_g < _g1.length) do 
+    local c = _g1[_g];
+    _g = _g + 1;
+    _self.board[c.x][c.y] = Board.REMOVING_BLOCK;
+    _G.go.delete(c.id);
+    end;
+  _self.chain = _hx_tab_array({ }, 0);
+end
+Board.nilremoved = function(_self) 
+  local _g = 0;
+  local _g1 = _self.board;
+  while (_g < _g1.length) do 
+    local col = _g1[_g];
+    _g = _g + 1;
+    local _g3 = 0;
+    local _g2 = col.length;
+    while (_g3 < _g2) do 
+      _g3 = _g3 + 1;
+      local i = _g3 - 1;
+      if (col[i] == Board.REMOVING_BLOCK) then 
+        col[i] = nil;
+      end;
+      end;
+    end;
+end
+Board.in_blocklist = function(blocks,block) 
+  local _g = 0;
+  while (_g < blocks.length) do 
+    local b = blocks[_g];
+    _g = _g + 1;
+    if (b.id == block) then 
+      do return true end;
+    end;
+    end;
+  do return false end;
+end
+Board.dropspots = function(_self) 
+  local spots = _hx_tab_array({ }, 0);
+  local _g = 0;
+  while (_g < 7) do 
+    _g = _g + 1;
+    local x = _g - 1;
+    local _g1 = 0;
+    while (_g1 < 9) do 
+      _g1 = _g1 + 1;
+      local y = _g1 - 1;
+      if (_self.board[x][y] == nil) then 
+        spots:push(_hx_o({__fields__={x=true,y=true},x=x,y=y}));
+        break;
+      end;
+      end;
+    end;
+  local _g11 = 1;
+  local _g2 = spots.length - 3;
+  while (_g11 < _g2) do 
+    _g11 = _g11 + 1;
+    spots:splice(Std.random(spots.length),1);
+    end;
+  do return spots end;
+end
+Board.drop = function(_self,spots) 
+  local _g = 0;
+  while (_g < spots.length) do 
+    local s = spots[_g];
+    _g = _g + 1;
+    local pos = _G.vmath.vector3();
+    pos.x = 80. + (80 * s.x);
+    pos.y = 1000;
+    local c = Board.colors[Std.random(Board.colors.length)];
+    local id = _G.factory.create("#blockfactory",pos,nil,({color = c}));
+    _G.go.animate(id,"position.y",_G.go.PLAYBACK_ONCE_FORWARD,90. + (80 * s.y),_G.go.EASING_OUTBOUNCE,0.5);
+    _G.go.set(id,"position.z",(s.x * -0.1) + (s.y * 0.01));
+    _self.board[s.x][s.y] = _hx_o({__fields__={id=true,color=true,x=true,y=true},id=id,color=c,x=s.x,y=s.y});
+    end;
+  Board.build_blocklist(_self);
+end
+Board.slide_board = function(_self) 
+  local _g = 0;
+  while (_g < 7) do 
+    _g = _g + 1;
+    local x = _g - 1;
+    local dy = 0;
+    local _g1 = 0;
+    while (_g1 < 9) do 
+      _g1 = _g1 + 1;
+      local y = _g1 - 1;
+      if (_self.board[x][y] ~= nil) then 
+        if (dy > 0) then 
+          _self.board[x][y - dy] = _self.board[x][y];
+          _self.board[x][y] = nil;
+          _self.board[x][y - dy].y = _self.board[x][y - dy].y - dy;
+          _G.go.animate(_self.board[x][y - dy].id,"position.y",_G.go.PLAYBACK_ONCE_FORWARD,90. + (80 * (y - dy)),_G.go.EASING_OUTBOUNCE,0.3);
+          _G.go.set(_self.board[x][y - dy].id,"position.z",(x * -0.1) + ((y - dy) * 0.01));
+        end;
+      else
+        dy = dy + 1;
+      end;
+      end;
+    end;
+  Board.build_blocklist(_self);
+end
+Board.build_board = function(_self) 
+  _G.math.randomseed(_G.os.time());
+  local pos = _G.vmath.vector3();
+  local _g = 0;
+  while (_g < 7) do 
+    _g = _g + 1;
+    local x = _g - 1;
+    pos.x = 80. + (80 * x);
+    _self.board[x] = _hx_tab_array({ }, 0);
+    local _g1 = 0;
+    while (_g1 < 9) do 
+      _g1 = _g1 + 1;
+      local y = _g1 - 1;
+      pos.y = 90. + (80 * y);
+      pos.z = (x * -0.1) + (y * 0.01);
+      local c = Board.colors[Std.random(Board.colors.length)];
+      local id = _G.factory.create("#blockfactory",pos,nil,({color = c}));
+      _self.board[x][y] = _hx_o({__fields__={id=true,color=true,x=true,y=true},id=id,color=c,x=x,y=y});
+      end;
+    end;
+  local y1 = 0;
+  local step = Std.int(9 / _self.num_magic);
+  while (y1 < 9) do 
+    local set = false;
+    while (not set) do 
+      local rand_y = _G.math.floor(y1);
+      local b = _G.math.floor(y1 + (9 / _self.num_magic));
+      local rand_y1 = Std.int(_G.math.random(rand_y,(function() 
+        local _hx_1
+        if (Math.isNaN(8) or Math.isNaN(b)) then 
+        _hx_1 = (0/0); else 
+        _hx_1 = _G.math.min(8,b); end
+        return _hx_1
+      end )()));
+      local rand_x = Std.int(_G.math.random(0,6));
+      if (_self.board[rand_x][rand_y1].color ~= _G.hash("magic")) then 
+        _G.msg.post(_self.board[rand_x][rand_y1].id,Messages.make_magic);
+        _self.board[rand_x][rand_y1].color = _G.hash("magic");
+        set = true;
+      end;
+      end;
+    y1 = y1 + step;
+    end;
+  Board.build_blocklist(_self);
+  local magic_blocks = Board.mark_magic_regions(_self);
+  if (Board.count_magic_regions(magic_blocks) == 1) then 
+    Board.clear_board(_self);
+    Board.build_board(_self);
+  end;
+  Board.highlight_magic(magic_blocks);
+end
+Board.slide_magic_blocks = function(_self) 
+  local _g = 0;
+  while (_g < 9) do 
+    _g = _g + 1;
+    local y = _g - 1;
+    local row_m = _hx_tab_array({ }, 0);
+    local _g1 = 0;
+    while (_g1 < 7) do 
+      _g1 = _g1 + 1;
+      local x = _g1 - 1;
+      if (((_self.board[x][y] ~= nil) and (_self.board[x][y] ~= Board.REMOVING_BLOCK)) and (_self.board[x][y].color == _G.hash("magic"))) then 
+        row_m:push(_self.board[x][y]);
+      end;
+      end;
+    local mc = row_m.length + 1;
+    while (row_m.length < mc) do 
+      mc = row_m.length;
+      local _g2 = 0;
+      local _g11 = row_m.length;
+      while (_g2 < _g11) do 
+        _g2 = _g2 + 1;
+        local i = _g2 - 1;
+        local x1 = row_m[i].x;
+        haxe.Log.trace(i,_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true,customParams=true},fileName="Board.hx",lineNumber=400,className="Board",methodName="slide_magic_blocks",customParams=_hx_tab_array({[0]=x1, y }, 2)}));
+        if ((y > 0) and (_self.board[x1][y - 1] == Board.REMOVING_BLOCK)) then 
+          haxe.Log.trace(i,_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="Board.hx",lineNumber=403,className="Board",methodName="slide_magic_blocks"}));
+          row_m[i] = nil;
+        else
+          if ((x1 > 0) and (_self.board[x1 - 1][y] == Board.REMOVING_BLOCK)) then 
+            _self.board[x1 - 1][y] = _self.board[x1][y];
+            _self.board[x1 - 1][y].x = x1 - 1;
+            _G.go.animate(_self.board[x1][y].id,"position.x",_G.go.PLAYBACK_ONCE_FORWARD,80. + (80 * (x1 - 1)),_G.go.EASING_OUTBOUNCE,0.3);
+            _G.go.set(_self.board[x1][y].id,"position.z",((x1 - 1) * -0.1) + (y * 0.01));
+            _self.board[x1][y] = Board.REMOVING_BLOCK;
+            haxe.Log.trace(i,_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="Board.hx",lineNumber=413,className="Board",methodName="slide_magic_blocks"}));
+            row_m[i] = nil;
+          else
+            if ((x1 < 6) and (_self.board[x1 + 1][y] == Board.REMOVING_BLOCK)) then 
+              _self.board[x1 + 1][y] = _self.board[x1][y];
+              _self.board[x1 + 1][y].x = x1 + 1;
+              _G.go.animate(_self.board[x1 + 1][y].id,"position.x",_G.go.PLAYBACK_ONCE_FORWARD,80. + (80 * (x1 + 1)),_G.go.EASING_OUTBOUNCE,0.3);
+              _G.go.set(_self.board[x1 + 1][y].id,"position.z",((x1 + 1) * -0.1) + (y * 0.01));
+              _self.board[x1][y] = Board.REMOVING_BLOCK;
+              row_m[i] = nil;
+            end;
+          end;
+        end;
+        end;
+      end;
+    end;
+end
+Board.prototype = _hx_a(
+  'init', function(self,_self) 
+    _self.board = _hx_tab_array({ }, 0);
+    _self.blocks = _hx_tab_array({ }, 0);
+    _self.chain = _hx_tab_array({ }, 0);
+    _self.connectors = _hx_tab_array({ }, 0);
+    _self.num_magic = 3;
+    _self.drops = 1;
+    _self.dragging = false;
+  end,
+  'on_message', function(self,_self,message_id,message,_) 
+    if (message_id) == Messages.drop then 
+      local s = Board.dropspots(_self);
+      if (s.length == 0) then 
+        _G.msg.post("no_drop_room#gui",Messages.show);
+      else
+        if (_self.drops > 0) then 
+          Board.drop(_self,s);
+          _self.drops = _self.drops - 1;
+          _G.msg.post("#gui",Messages.set_drop_counter,_hx_o({__fields__={drops=true},drops=_self.drops}));
+        end;
+      end;
+    elseif (message_id) == Messages.level_completed then 
+      _G.msg.post(".",defold.GoMessages.release_input_focus);
+      local _g = 0;
+      local _g1 = Board.magic_blocks(_self);
+      while (_g < _g1.length) do 
+        local m = _g1[_g];
+        _g = _g + 1;
+        _G.go.set_scale(0.17,m.id);
+        _G.go.animate(m.id,"scale",_G.go.PLAYBACK_LOOP_PINGPONG,0.19,_G.go.EASING_INSINE,0.5,0);
+        end;
+      _G.msg.post("level_complete#gui",Messages.show);
+    elseif (message_id) == Messages.next_level then 
+      Board.clear_board(_self);
+      _self.drops = _self.drops + 1;
+      _G.msg.post("#",Messages.start_level,_hx_o({__fields__={difficulty=true},difficulty=_self.num_magic}));
+    elseif (message_id) == Messages.restart_level then 
+      Board.clear_board(_self);
+      Board.build_board(_self);
+      _self.drops = 1;
+      _G.msg.post("#gui",Messages.set_drop_counter,_hx_o({__fields__={drops=true},drops=_self.drops}));
+      _G.msg.post(".",defold.GoMessages.acquire_input_focus);
+    elseif (message_id) == Messages.start_level then 
+      _self.num_magic = message.difficulty + 1;
+      Board.build_board(_self);
+      _G.msg.post("#gui",Messages.set_drop_counter,_hx_o({__fields__={drops=true},drops=_self.drops}));
+      _G.msg.post("present_level#gui",gui.PresentLevel.ShowMessage,_hx_o({__fields__={level=true},level=message.difficulty}));
+      _G.go.animate("#","timer",_G.go.PLAYBACK_ONCE_FORWARD,1,_G.go.EASING_LINEAR,2,0,function(_1,_2,_3) 
+        _G.msg.post("present_level#gui",Messages.hide);
+        _G.msg.post(".",defold.GoMessages.acquire_input_focus);
+      end); end;
+  end,
+  'on_input', function(self,_self,action_id,action) 
+    if (action_id ~= _G.hash("touch")) then 
+      do return false end;
+    end;
+    if (action.value == 1) then 
+      local x = _G.math.floor((action.x - 40) / 80);
+      local y = _G.math.floor((action.y - 40) / 80);
+      if (((((x < 0) or (x >= 7)) or (y < 0)) or (y >= 9)) or (_self.board[x][y] == nil)) then 
+        do return false end;
+      end;
+      if (_self.board[x][y].color == _G.hash("magic")) then 
+        do return false end;
+      end;
+      if (action.pressed) then 
+        _self.neighbors = Board.same_color_neighbors(_self,x,y);
+        _self.chain = _hx_tab_array({[0]=_self.board[x][y] }, 1);
+        local p = _G.go.get_position(_self.board[x][y].id);
+        local b = Board.centeroff;
+        _self.connectors:push(_G.factory.create("#connectorfactory",(p) + (b)));
+        _self.dragging = true;
+      else
+        if (_self.dragging) then 
+          if (Board.in_blocklist(_self.neighbors,_self.board[x][y].id) and not Board.in_blocklist(_self.chain,_self.board[x][y].id)) then 
+            _self.chain:push(_self.board[x][y]);
+            _self.neighbors = Board.same_color_neighbors(_self,x,y);
+            local p1 = _G.go.get_position(_self.board[x][y].id);
+            local b1 = Board.centeroff;
+            local id = _G.factory.create("#connectorfactory",(p1) + (b1));
+            _self.connectors:push(id);
+          end;
+        end;
+      end;
+    else
+      if (action.released) then 
+        _self.dragging = false;
+        if (_self.chain.length > 1) then 
+          Board.remove_chain(_self);
+          Board.slide_magic_blocks(_self);
+          Board.nilremoved(_self);
+          Board.slide_board(_self);
+          local magic_blocks = Board.mark_magic_regions(_self);
+          if (Board.count_magic_regions(magic_blocks) == 1) then 
+            _G.msg.post("#",Messages.level_completed);
+          end;
+          Board.highlight_magic(magic_blocks);
+        end;
+        local _g = 0;
+        local _g1 = _self.connectors;
+        while (_g < _g1.length) do 
+          local c = _g1[_g];
+          _g = _g + 1;
+          _G.go.delete(c);
+          end;
+        _self.connectors = _hx_tab_array({ }, 0);
+      end;
+    end;
+    do return false end
+  end,
+  'on_reload', function(self,_) 
+  end
+)
+Board.__super__ = defold.support.Script
+setmetatable(Board.prototype,{__index=defold.support.Script.prototype})
+
 Connector.new = function() 
   local self = _hx_new(Connector.prototype)
   Connector.super(self)
@@ -290,6 +805,11 @@ Main.prototype = _hx_a(
 Main.__super__ = defold.support.Script
 setmetatable(Main.prototype,{__index=defold.support.Script.prototype})
 
+Math.new = {}
+Math.isNaN = function(f) 
+  do return f ~= f end;
+end
+
 Messages.new = {}
 
 String.new = {}
@@ -328,6 +848,16 @@ String.prototype = _hx_a(
 Std.new = {}
 Std.string = function(s) 
   do return lua.Boot.__string_rec(s) end;
+end
+Std.int = function(x) 
+  do return _hx_bit_clamp(x) end;
+end
+Std.random = function(x) 
+  if (x <= 0) then 
+    do return 0 end;
+  else
+    do return _G.math.floor(_G.math.random() * x) end;
+  end;
 end
 
 defold.CollectionproxyMessages.new = {}
@@ -582,6 +1112,23 @@ gui.Restart.prototype = _hx_a(
 gui.Restart.__super__ = defold.support.GuiScript
 setmetatable(gui.Restart.prototype,{__index=defold.support.GuiScript.prototype})
 
+haxe.Log.new = {}
+haxe.Log.trace = function(v,infos) 
+  local str = nil;
+  if (infos ~= nil) then 
+    str = infos.fileName .. ":" .. infos.lineNumber .. ": " .. Std.string(v);
+    if (infos.customParams ~= nil) then 
+      str = str .. ("," .. infos.customParams:join(","));
+    end;
+  else
+    str = v;
+  end;
+  if (str == nil) then 
+    str = "null";
+  end;
+  _hx_print(str);
+end
+
 haxe.io.Eof.new = {}
 haxe.io.Eof.prototype = _hx_a(
   'toString', function(self) 
@@ -732,6 +1279,25 @@ lua.Boot.fieldIterator = function(o)
     do return cur_val ~= nil end;
   end}) end;
 end
+_hx_bit_clamp = function(v) 
+  if v <= 2147483647 and v >= -2147483648 then
+    if v > 0 then return _G.math.floor(v)
+    else return _G.math.ceil(v)
+    end
+  end
+  if v > 2251798999999999 then v = v*2 end;
+  if (v ~= v or math.abs(v) == _G.math.huge) then return nil end
+  return _hx_bit.band(v, 2147483647 ) - math.abs(_hx_bit.band(v, 2147483648))
+end
+pcall(require, 'bit')
+if bit then
+  _hx_bit = bit
+elseif bit32 then
+  local _hx_bit_raw = bit32
+  _hx_bit = setmetatable({}, { __index = _hx_bit_raw });
+  _hx_bit.bnot = function(...) return _hx_bit_clamp(_hx_bit_raw.bnot(...)) end;
+  _hx_bit.bxor = function(...) return _hx_bit_clamp(_hx_bit_raw.bxor(...)) end;
+end
 local _hx_string_mt = _G.getmetatable('');
 String.__oldindex = _hx_string_mt.__index;
 _hx_string_mt.__index = String.__index;
@@ -739,10 +1305,20 @@ _hx_string_mt.__add = function(a,b) return Std.string(a)..Std.string(b) end;
 _hx_string_mt.__concat = _hx_string_mt.__add
 _hx_array_mt.__index = Array.prototype
 
+Board.REMOVING_BLOCK = _hx_o({__fields__={id=true,color=true,x=true,y=true},id=nil,color=nil,x=-1,y=-1})
+Board.blocksize = 80
+Board.edge = 40
+Board.bottom_edge = 50
+Board.boardwidth = 7
+Board.boardheight = 9
+Board.centeroff = _G.vmath.vector3(8,-8,0)
+Board.dropamount = 3
+Board.colors = _hx_tab_array({[0]=_G.hash("orange"), _G.hash("pink"), _G.hash("blue"), _G.hash("yellow"), _G.hash("green") }, 5)
 Messages.start_game = _G.hash("start_game")
 Messages.start_level = _G.hash("start_level")
 Messages.next_level = _G.hash("next_level")
 Messages.restart_level = _G.hash("restart_level")
+Messages.level_completed = _G.hash("level_completed")
 Messages.to_main_menu = _G.hash("to_main_menu")
 Messages.hide = _G.hash("hide")
 Messages.show = _G.hash("show")
@@ -777,4 +1353,5 @@ do
 
 end
 _G.math.randomseed(_G.os.time());
+_hx_print = print or (function() end)
 return _hx_exports

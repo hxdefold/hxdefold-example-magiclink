@@ -7,7 +7,7 @@ import defold.Vmath;
 import defold.types.Hash;
 import defold.types.Message;
 
-typedef BlockData = {
+private typedef BlockData = {
     @property("none") var color:Hash;
     var fx1:Null<Hash>;
     var fx2:Null<Hash>;
