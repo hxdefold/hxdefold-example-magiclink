@@ -1,4 +1,4 @@
-script: "/main/no_drop_room.gui_script"
+script: "/scripts/NoDropRoom.gui_script"
 fonts {
   name: "main"
   font: "/fonts/main.font"

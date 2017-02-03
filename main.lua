@@ -64,6 +64,7 @@ local Board = _hx_e()
 local LevelComplete = _hx_e()
 local MainMenu = _hx_e()
 local Messages = _hx_e()
+local NoDropRoom = _hx_e()
 local PresentLevel = _hx_e()
 local Restart = _hx_e()
 local String = _hx_e()
@@ -254,6 +255,38 @@ MainMenu.__super__ = defold.support.GuiScript
 setmetatable(MainMenu.prototype,{__index=defold.support.GuiScript.prototype})
 
 Messages.new = {}
+
+NoDropRoom.new = function() 
+  local self = _hx_new(NoDropRoom.prototype)
+  NoDropRoom.super(self)
+  return self
+end
+NoDropRoom.super = function(self) 
+  defold.support.GuiScript.super(self);
+end
+_hx_exports["NoDropRoom"] = NoDropRoom
+NoDropRoom.prototype = _hx_a(
+  'init', function(self,_self) 
+    _G.msg.post("#",Messages.hide);
+    _self.t = 0;
+  end,
+  'update', function(self,_self,dt) 
+    if (_self.t < 0) then 
+      _G.msg.post("#",Messages.hide);
+    else
+      _self.t = _self.t - dt;
+    end;
+  end,
+  'on_message', function(self,_self,message_id,message,_) 
+    if (message_id) == Messages.hide then 
+      _G.msg.post("#",defold.GoMessages.disable);
+    elseif (message_id) == Messages.show then 
+      _self.t = 1;
+      _G.msg.post("#",defold.GoMessages.enable); end;
+  end
+)
+NoDropRoom.__super__ = defold.support.GuiScript
+setmetatable(NoDropRoom.prototype,{__index=defold.support.GuiScript.prototype})
 
 PresentLevel.new = function() 
   local self = _hx_new(PresentLevel.prototype)
