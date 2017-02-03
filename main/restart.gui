@@ -1,4 +1,4 @@
-script: "/main/restart.gui_script"
+script: "/scripts/Restart.gui_script"
 fonts {
   name: "main"
   font: "/fonts/main.font"
