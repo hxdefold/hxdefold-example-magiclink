@@ -8,4 +8,7 @@ class Messages {
     var show;
     var drop;
     var set_drop_counter:{drops:Int};
+    var make_magic;
+    var lights_on;
+    var lights_off;
 }

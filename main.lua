@@ -59,6 +59,8 @@ local _hx_exports = _hx_exports or {}
 local Array = _hx_e()
 local defold = {}
 defold.support = {}
+defold.support.Script = _hx_e()
+local Block = _hx_e()
 defold.support.GuiScript = _hx_e()
 local Board = _hx_e()
 local LevelComplete = _hx_e()
@@ -71,6 +73,7 @@ local String = _hx_e()
 local Std = _hx_e()
 defold.GoMessages = _hx_e()
 defold.GuiMessages = _hx_e()
+defold.SpriteMessages = _hx_e()
 defold.types = {}
 defold.types._Message = {}
 defold.types._Message.Message_Impl_ = _hx_e()
@@ -115,6 +118,86 @@ Array.prototype = _hx_a(
     end}) end
   end
 )
+
+defold.support.Script.new = function() 
+  local self = _hx_new(defold.support.Script.prototype)
+  defold.support.Script.super(self)
+  return self
+end
+defold.support.Script.super = function(self) 
+end
+defold.support.Script.prototype = _hx_a(
+  'init', function(self,_self) 
+  end,
+  'final', function(self,_self) 
+  end,
+  'update', function(self,_self,dt) 
+  end,
+  'on_message', function(self,_self,message_id,message,sender) 
+  end,
+  'on_input', function(self,_self,action_id,action) 
+    do return false end
+  end,
+  'on_reload', function(self,_self) 
+  end
+)
+
+Block.new = function() 
+  local self = _hx_new(Block.prototype)
+  Block.super(self)
+  return self
+end
+Block.super = function(self) 
+  defold.support.Script.super(self);
+end
+_hx_exports["Block"] = Block
+Block.prototype = _hx_a(
+  'init', function(self,_self) 
+    _G.go.set_scale(0.18);
+    _self.fx1 = nil;
+    _self.fx2 = nil;
+    _G.msg.post("#cover",defold.GoMessages.disable);
+    if (_self.color ~= nil) then 
+      _G.msg.post("#sprite",defold.SpriteMessages.play_animation,_hx_o({__fields__={id=true},id=_self.color}));
+    else
+      _G.msg.post("#sprite",defold.GoMessages.disable);
+    end;
+  end,
+  'final', function(self,_self) 
+    if (_self.fx1 ~= nil) then 
+      _G.go.delete(_self.fx1);
+    end;
+    if (_self.fx2 ~= nil) then 
+      _G.go.delete(_self.fx2);
+    end;
+    if (_self.cover ~= nil) then 
+      _G.go.delete(_self.cover);
+    end;
+  end,
+  'on_message', function(self,_self,message_id,message,_) 
+    local message_id1 = message_id;
+    if (message_id1) == Messages.lights_off or (message_id1) == Messages.lights_on then 
+      _G.msg.post(_self.fx1,message_id);
+      _G.msg.post(_self.fx2,message_id);
+    elseif (message_id1) == Messages.make_magic then 
+      _self.color = _G.hash("magic");
+      _G.msg.post("#cover",defold.GoMessages.enable);
+      _G.msg.post("#sprite",defold.GoMessages.enable);
+      _G.msg.post("#sprite",defold.SpriteMessages.play_animation,_hx_o({__fields__={id=true},id=_G.hash("magic-sphere_layer1")}));
+      local hleft = _G.hash("left");
+      local hright = _G.hash("right");
+      _self.fx1 = _G.factory.create("#fxfactory",_G.vmath.vector3(0,0,0),nil,({direction = hleft}));
+      _self.fx2 = _G.factory.create("#fxfactory",_G.vmath.vector3(0,0,0),nil,({direction = hright}));
+      _G.msg.post(_self.fx1,defold.GoMessages.set_parent,_hx_o({__fields__={parent_id=true,keep_world_transform=true},parent_id=_G.go.get_id(),keep_world_transform=0}));
+      _G.msg.post(_self.fx2,defold.GoMessages.set_parent,_hx_o({__fields__={parent_id=true,keep_world_transform=true},parent_id=_G.go.get_id(),keep_world_transform=0}));
+      _G.go.set(_self.fx1,"position.z",0.01);
+      _G.go.set(_self.fx1,"scale",1);
+      _G.go.set(_self.fx2,"position.z",0.02);
+      _G.go.set(_self.fx2,"scale",1); end;
+  end
+)
+Block.__super__ = defold.support.Script
+setmetatable(Block.prototype,{__index=defold.support.Script.prototype})
 
 defold.support.GuiScript.new = function() 
   local self = _hx_new(defold.support.GuiScript.prototype)
@@ -399,6 +482,8 @@ defold.GoMessages.new = {}
 
 defold.GuiMessages.new = {}
 
+defold.SpriteMessages.new = {}
+
 defold.types._Message.Message_Impl_.new = {}
 defold.types._Message.Message_Impl_._new = function(s) 
   do return _G.hash(s) end;
@@ -569,6 +654,9 @@ Messages.hide = _G.hash("hide")
 Messages.show = _G.hash("show")
 Messages.drop = _G.hash("drop")
 Messages.set_drop_counter = _G.hash("set_drop_counter")
+Messages.make_magic = _G.hash("make_magic")
+Messages.lights_on = _G.hash("lights_on")
+Messages.lights_off = _G.hash("lights_off")
 PresentLevel.ShowMessage = _G.hash("show")
 defold.GoMessages.acquire_input_focus = _G.hash("acquire_input_focus")
 defold.GoMessages.disable = _G.hash("disable")
@@ -578,6 +666,8 @@ defold.GoMessages.request_transform = _G.hash("request_transform")
 defold.GoMessages.set_parent = _G.hash("set_parent")
 defold.GoMessages.transform_response = _G.hash("transform_response")
 defold.GuiMessages.layout_changed = _G.hash("layout_changed")
+defold.SpriteMessages.animation_done = _G.hash("animation_done")
+defold.SpriteMessages.play_animation = _G.hash("play_animation")
 lua.Boot.hiddenFields = {__id__=true, hx__closures=true, super=true, prototype=true, __fields__=true, __ifields__=true, __class__=true, __properties__=true}
 do
 
