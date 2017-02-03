@@ -61,6 +61,7 @@ local defold = {}
 defold.support = {}
 defold.support.GuiScript = _hx_e()
 local LevelComplete = _hx_e()
+local MainMenu = _hx_e()
 local Messages = _hx_e()
 local PresentLevel = _hx_e()
 local String = _hx_e()
@@ -168,6 +169,45 @@ LevelComplete.prototype = _hx_a(
 )
 LevelComplete.__super__ = defold.support.GuiScript
 setmetatable(LevelComplete.prototype,{__index=defold.support.GuiScript.prototype})
+
+MainMenu.new = function() 
+  local self = _hx_new(MainMenu.prototype)
+  MainMenu.super(self)
+  return self
+end
+MainMenu.super = function(self) 
+  defold.support.GuiScript.super(self);
+end
+_hx_exports["MainMenu"] = MainMenu
+MainMenu.prototype = _hx_a(
+  'init', function(self,_) 
+    _G.msg.post(".",defold.GoMessages.acquire_input_focus);
+    local bs = _hx_tab_array({[0]="brick1", "brick2", "brick3", "brick4", "brick5", "brick6" }, 6);
+    local _g = 0;
+    while (_g < bs.length) do 
+      local b = bs[_g];
+      _g = _g + 1;
+      local n = _G.gui.get_node(b);
+      local rt = (_G.math.random() * 3) + 1;
+      local a = _G.math.random(-45,45);
+      _G.gui.set_color(n,_G.vmath.vector4(1,1,1,0));
+      _G.gui.animate(n,"position.y",-100 - _G.math.random(0,50),_G.gui.EASING_INSINE,1 + rt,0,nil,_G.gui.PLAYBACK_LOOP_FORWARD);
+      _G.gui.animate(n,"color.w",1,_G.gui.EASING_INSINE,1 + rt,0,nil,_G.gui.PLAYBACK_LOOP_FORWARD);
+      _G.gui.animate(n,"rotation.z",a,_G.gui.EASING_INSINE,1 + rt,0,nil,_G.gui.PLAYBACK_LOOP_FORWARD);
+      end;
+    _G.gui.animate(_G.gui.get_node("start"),"color.x",1,_G.gui.EASING_INOUTSINE,1,0,nil,_G.gui.PLAYBACK_LOOP_PINGPONG);
+  end,
+  'on_input', function(self,_,action_id,action) 
+    if ((action_id == _G.hash("touch")) and action.pressed) then 
+      if (_G.gui.pick_node(_G.gui.get_node("start"),action.x,action.y)) then 
+        _G.msg.post("/main#script",Messages.StartGame);
+      end;
+    end;
+    do return false end
+  end
+)
+MainMenu.__super__ = defold.support.GuiScript
+setmetatable(MainMenu.prototype,{__index=defold.support.GuiScript.prototype})
 
 Messages.new = {}
 
@@ -399,6 +439,7 @@ _hx_string_mt.__add = function(a,b) return Std.string(a)..Std.string(b) end;
 _hx_string_mt.__concat = _hx_string_mt.__add
 _hx_array_mt.__index = Array.prototype
 
+Messages.StartGame = _G.hash("start_game")
 Messages.NextLevel = _G.hash("next_level")
 Messages.Hide = _G.hash("hide")
 Messages.Show = _G.hash("show")
