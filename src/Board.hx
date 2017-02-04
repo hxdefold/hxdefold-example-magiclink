@@ -6,6 +6,7 @@ import defold.Vmath;
 import defold.support.ScriptOnInputAction;
 import defold.types.Hash;
 import defold.types.Message;
+import defold.types.Property;
 
 private typedef BoardData = {
     @property(0) var timer:Float;
@@ -290,9 +291,9 @@ class Board extends defold.support.Script<BoardData> {
             pos.y = 1000;
             var c = colors[Std.random(colors.length)];  // Pick a random color
             var id = Factory.create("#blockfactory", pos, null, lua.Table.create({color: c}));
-            Go.animate(id, "position.y", PLAYBACK_ONCE_FORWARD, bottom_edge + blocksize / 2 + blocksize * s.y, EASING_OUTBOUNCE, 0.5);
+            Go.animate(id, GoProperties.position.y, PLAYBACK_ONCE_FORWARD, bottom_edge + blocksize / 2 + blocksize * s.y, EASING_OUTBOUNCE, 0.5);
             // Calc new z
-            Go.set(id, "position.z", s.x * -0.1 + s.y * 0.01);
+            Go.set(id, GoProperties.position.z, s.x * -0.1 + s.y * 0.01);
 
             self.board[s.x][s.y] = { id: id, color: c,  x: s.x, y: s.y };
         }
@@ -317,9 +318,9 @@ class Board extends defold.support.Script<BoardData> {
                         self.board[x][y] = null;
                         // Calc new position
                         self.board[x][y - dy].y = self.board[x][y - dy].y - dy;
-                        Go.animate(self.board[x][y-dy].id, "position.y", PLAYBACK_ONCE_FORWARD, bottom_edge + blocksize / 2 + blocksize * (y - dy), EASING_OUTBOUNCE, 0.3);
+                        Go.animate(self.board[x][y-dy].id, GoProperties.position.y, PLAYBACK_ONCE_FORWARD, bottom_edge + blocksize / 2 + blocksize * (y - dy), EASING_OUTBOUNCE, 0.3);
                         // Calc new z
-                        Go.set(self.board[x][y-dy].id, "position.z", x * -0.1 + (y-dy) * 0.01);
+                        Go.set(self.board[x][y-dy].id, GoProperties.position.z, x * -0.1 + (y-dy) * 0.01);
                     }
                 } else {
                     dy++;
@@ -406,9 +407,9 @@ class Board extends defold.support.Script<BoardData> {
                         // Hole to the left! Slide magic block there
                         self.board[x-1][y] = self.board[x][y];
                         self.board[x-1][y].x = x - 1;
-                        Go.animate(self.board[x][y].id, "position.x", PLAYBACK_ONCE_FORWARD, edge + blocksize / 2 + blocksize * (x - 1), EASING_OUTBOUNCE, 0.3);
+                        Go.animate(self.board[x][y].id, GoProperties.position.x, PLAYBACK_ONCE_FORWARD, edge + blocksize / 2 + blocksize * (x - 1), EASING_OUTBOUNCE, 0.3);
                         // Calc new z
-                        Go.set(self.board[x][y].id, "position.z", (x - 1) * -0.1 + y * 0.01);
+                        Go.set(self.board[x][y].id, GoProperties.position.z, (x - 1) * -0.1 + y * 0.01);
                         self.board[x][y] = REMOVING_BLOCK; // Will be nilled later
                         trace(i);
                         row_m[i] = null;
@@ -416,9 +417,9 @@ class Board extends defold.support.Script<BoardData> {
                         // Hole to the right. Slide magic block there
                         self.board[x+1][y] = self.board[x][y];
                         self.board[x+1][y].x = x + 1;
-                        Go.animate(self.board[x+1][y].id, "position.x", PLAYBACK_ONCE_FORWARD, edge + blocksize / 2 + blocksize * (x + 1), EASING_OUTBOUNCE, 0.3);
+                        Go.animate(self.board[x+1][y].id, GoProperties.position.x, PLAYBACK_ONCE_FORWARD, edge + blocksize / 2 + blocksize * (x + 1), EASING_OUTBOUNCE, 0.3);
                         // Calc new z
-                        Go.set(self.board[x+1][y].id, "position.z", (x + 1) * -0.1 + y * 0.01);
+                        Go.set(self.board[x+1][y].id, GoProperties.position.z, (x + 1) * -0.1 + y * 0.01);
                         self.board[x][y] = REMOVING_BLOCK; // Will be nilled later
                         row_m[i] = null;
                     }
@@ -444,7 +445,7 @@ class Board extends defold.support.Script<BoardData> {
 
                 Msg.post("present_level#gui", gui.PresentLevel.ShowMessage, {level: message.difficulty});
                 // Wait some...
-                Go.animate("#", "timer", PLAYBACK_ONCE_FORWARD, 1, EASING_LINEAR, 2, 0, function(_, _, _) {
+                Go.animate("#", new Property<Float>("timer"), PLAYBACK_ONCE_FORWARD, 1, EASING_LINEAR, 2, 0, function(_, _, _) {
                     Msg.post("present_level#gui", Messages.hide);
                     Msg.post(".", GoMessages.acquire_input_focus);
                 });
@@ -463,7 +464,7 @@ class Board extends defold.support.Script<BoardData> {
                 // Animate the magic!
                 for (m in magic_blocks(self)) {
                     Go.set_scale(0.17, m.id);
-                    Go.animate(m.id, "scale", PLAYBACK_LOOP_PINGPONG, 0.19, EASING_INSINE, 0.5, 0);
+                    Go.animate(m.id, GoProperties.scale_uniform, PLAYBACK_LOOP_PINGPONG, 0.19, EASING_INSINE, 0.5, 0);
                 }
 
                 // Show completion screen

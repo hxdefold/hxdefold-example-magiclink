@@ -12,11 +12,11 @@ class MagicFx extends defold.support.Script<MagicFxData> {
     override function init(self:MagicFxData) {
         Msg.post("#", Messages.lights_off);
         if (self.direction == hash("left")) {
-            Go.set(".", "euler.z", 0);
-            Go.animate(".", "euler.z", PLAYBACK_LOOP_FORWARD, 360, EASING_LINEAR, 5 + Math.random());
+            Go.set(".", GoProperties.euler.z, 0);
+            Go.animate(".", GoProperties.euler.z, PLAYBACK_LOOP_FORWARD, 360, EASING_LINEAR, 5 + Math.random());
         } else {
-            Go.set(".", "euler.z", 0);
-            Go.animate(".", "euler.z", PLAYBACK_LOOP_FORWARD, -360, EASING_LINEAR, 4 + Math.random());
+            Go.set(".", GoProperties.euler.z, 0);
+            Go.animate(".", GoProperties.euler.z, PLAYBACK_LOOP_FORWARD, -360, EASING_LINEAR, 4 + Math.random());
         }
     }
 

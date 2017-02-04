@@ -53,10 +53,10 @@ class Block extends defold.support.Script<BlockData> {
                 Msg.post(self.fx1, GoMessages.set_parent, {parent_id: Go.get_id(), keep_world_transform: 0});
                 Msg.post(self.fx2, GoMessages.set_parent, {parent_id: Go.get_id(), keep_world_transform: 0});
 
-                Go.set(self.fx1, "position.z", 0.01);
-                Go.set(self.fx1, "scale", 1);
-                Go.set(self.fx2, "position.z", 0.02);
-                Go.set(self.fx2, "scale", 1);
+                Go.set(self.fx1, GoProperties.position.z, 0.01);
+                Go.set(self.fx1, GoProperties.scale_uniform, 1);
+                Go.set(self.fx2, GoProperties.position.z, 0.02);
+                Go.set(self.fx2, GoProperties.scale_uniform, 1);
             case Messages.lights_on | Messages.lights_off:
                 Msg.post(self.fx1, message_id);
                 Msg.post(self.fx2, message_id);
