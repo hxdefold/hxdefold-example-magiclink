@@ -1,6 +1,7 @@
 -cp src
 -D analyzer-optimize
 -D luajit
+-D lua-vanilla
 -lib hxdefold
 -lua main.lua
 --macro defold.support.ScriptMacro.use(".")
