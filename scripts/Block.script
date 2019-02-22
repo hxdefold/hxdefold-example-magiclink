@@ -11,7 +11,7 @@ function init(self)
 end
 
 function final(self)
-	script:final(self)
+	script:final_(self)
 end
 
 function on_message(self, message_id, message, _)

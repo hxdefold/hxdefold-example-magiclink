@@ -28,7 +28,7 @@ class Block extends defold.support.Script<BlockData> {
             Msg.post("#sprite", GoMessages.disable);
     }
 
-    override function final(self:BlockData) {
+    override function final_(self:BlockData) {
         if (self.fx1 != null)
             Go.delete(self.fx1);
         if (self.fx2 != null)
